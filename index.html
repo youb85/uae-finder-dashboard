@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UAE Finder V3 — Winners du jour</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; color: #333; }
+  header { background: #1a1a2e; color: white; padding: 24px; text-align: center; }
+  header h1 { font-size: 28px; margin-bottom: 6px; }
+  header p { color: #aaa; font-size: 14px; }
+  .container { max-width: 900px; margin: 30px auto; padding: 0 16px; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 30px; }
+  .stat { background: white; border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .stat-num { font-size: 32px; font-weight: 700; color: #e94560; }
+  .stat-label { font-size: 13px; color: #888; margin-top: 4px; }
+  .filters { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+  .filter-btn { padding: 8px 16px; border: 2px solid #e94560; border-radius: 20px; background: white; color: #e94560; cursor: pointer; font-size: 13px; transition: all 0.2s; }
+  .filter-btn.active, .filter-btn:hover { background: #e94560; color: white; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: transform 0.2s; }
+  .card:hover { transform: translateY(-2px); }
+  .card-title { font-size: 14px; font-weight: 600; margin-bottom: 12px; line-height: 1.4; color: #1a1a2e; }
+  .card-stats { display: flex; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+  .badge { font-size: 12px; padding: 4px 10px; border-radius: 20px; font-weight: 500; }
+  .badge-price { background: #e8f5e9; color: #2e7d32; }
+  .badge-rating { background: #fff8e1; color: #f57c00; }
+  .badge-reviews { background: #e3f2fd; color: #1565c0; }
+  .badge-pinterest { background: #fce4ec; color: #c62828; }
+  .card-date { font-size: 11px; color: #bbb; margin-bottom: 10px; }
+  .card-link { display: block; text-align: center; padding: 8px; background: #1a1a2e; color: white; border-radius: 8px; text-decoration: none; font-size: 13px; transition: background 0.2s; }
+  .card-link:hover { background: #e94560; }
+  .loading { text-align: center; padding: 60px; color: #888; font-size: 16px; }
+  .error { text-align: center; padding: 40px; color: #e94560; }
+  @media (max-width: 600px) { .stats { grid-template-columns: 1fr 1fr; } }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🏆 UAE Finder V3</h1>
+  <p>Produits winners Amazon UAE — mis à jour chaque matin à 6h</p>
+</header>
+
+<div class="container">
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-num" id="total-count">—</div>
+      <div class="stat-label">Winners total</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" id="today-count">—</div>
+      <div class="stat-label">Ajoutés aujourd'hui</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" id="pinterest-count">—</div>
+      <div class="stat-label">Tendances Pinterest</div>
+    </div>
+  </div>
+
+  <div class="filters">
+    <button class="filter-btn active" onclick="filterCards('all', this)">Tous</button>
+    <button class="filter-btn" onclick="filterCards('pinterest', this)">🔥 Pinterest</button>
+    <button class="filter-btn" onclick="filterCards('high-price', this)">💰 +150 AED</button>
+    <button class="filter-btn" onclick="filterCards('top-rated', this)">⭐ +4.5</button>
+  </div>
+
+  <div class="grid" id="cards-grid">
+    <div class="loading">⏳ Chargement des winners...</div>
+  </div>
+</div>
+
+<script>
+const AIRTABLE_KEY = "pat5GxWq9SKLM3Cvi.e7f3088f2f7b3210062af7d003124a7f00d99a62c7b5a239f8efe03aace20001";
+const BASE_ID = "app8wQvNiIqeZpBhD";
+const TABLE = "Winners";
+
+let allRecords = [];
+
+async function loadWinners() {
+  try {
+    const url = "https://api.airtable.com/v0/" + BASE_ID + "/" + TABLE + "?sort[0][field]=Date&sort[0][direction]=desc&maxRecords=100";
+    const r = await fetch(url, {
+      headers: { "Authorization": "Bearer " + AIRTABLE_KEY }
+    });
+    const data = await r.json();
+    allRecords = data.records || [];
+    renderCards(allRecords);
+    updateStats(allRecords);
+  } catch(e) {
+    document.getElementById('cards-grid').innerHTML = '<div class="error">❌ Erreur de chargement. Vérifiez la clé Airtable.</div>';
+  }
+}
+
+function updateStats(records) {
+  document.getElementById('total-count').textContent = records.length;
+  const today = new Date().toISOString().split('T')[0];
+  const todayCount = records.filter(r => r.fields.Date === today).length;
+  document.getElementById('today-count').textContent = todayCount;
+  const pinterestCount = records.filter(r => r.fields.Pinterest === true).length;
+  document.getElementById('pinterest-count').textContent = pinterestCount;
+}
+
+function renderCards(records) {
+  const grid = document.getElementById('cards-grid');
+  if (records.length === 0) {
+    grid.innerHTML = '<div class="loading">Aucun winner trouvé.</div>';
+    return;
+  }
+  grid.innerHTML = records.map(r => {
+    const f = r.fields;
+    const pinterest = f.Pinterest ? '<span class="badge badge-pinterest">🔥 Pinterest</span>' : '';
+    return `
+      <div class="card" data-pinterest="${f.Pinterest || false}" data-price="${f['Prix AED'] || 0}" data-rating="${f.Rating || 0}">
+        <div class="card-date">📅 ${f.Date || 'N/A'}</div>
+        <div class="card-title">${f.Titre || 'Titre inconnu'}</div>
+        <div class="card-stats">
+          <span class="badge badge-price">💰 ${f['Prix AED'] || 0} AED</span>
+          <span class="badge badge-rating">⭐ ${f.Rating || 0}</span>
+          <span class="badge badge-reviews">💬 ${f.Avis || 0} avis</span>
+          ${pinterest}
+        </div>
+        <a href="${f.URL || '#'}" target="_blank" class="card-link">Voir sur Amazon →</a>
+      </div>
+    `;
+  }).join('');
+}
+
+function filterCards(type, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  let filtered = allRecords;
+  if (type === 'pinterest') filtered = allRecords.filter(r => r.fields.Pinterest === true);
+  if (type === 'high-price') filtered = allRecords.filter(r => (r.fields['Prix AED'] || 0) >= 150);
+  if (type === 'top-rated') filtered = allRecords.filter(r => (r.fields.Rating || 0) >= 4.5);
+  renderCards(filtered);
+}
+
+loadWinners();
+</script>
+</body>
+</html>
