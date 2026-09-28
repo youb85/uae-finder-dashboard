@@ -3,71 +3,159 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>UAE Finder V3 — Winners du jour</title>
+<title>UAE Finder V3 — Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; color: #333; }
-  header { background: #1a1a2e; color: white; padding: 24px; text-align: center; }
-  header h1 { font-size: 28px; margin-bottom: 6px; }
-  header p { color: #aaa; font-size: 14px; }
-  .container { max-width: 900px; margin: 30px auto; padding: 0 16px; }
-  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 30px; }
-  .stat { background: white; border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-  .stat-num { font-size: 32px; font-weight: 700; color: #e94560; }
-  .stat-label { font-size: 13px; color: #888; margin-top: 4px; }
-  .filters { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-  .filter-btn { padding: 8px 16px; border: 2px solid #e94560; border-radius: 20px; background: white; color: #e94560; cursor: pointer; font-size: 13px; transition: all 0.2s; }
-  .filter-btn.active, .filter-btn:hover { background: #e94560; color: white; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
-  .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: transform 0.2s; }
-  .card:hover { transform: translateY(-2px); }
-  .card-title { font-size: 14px; font-weight: 600; margin-bottom: 12px; line-height: 1.4; color: #1a1a2e; }
-  .card-stats { display: flex; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
-  .badge { font-size: 12px; padding: 4px 10px; border-radius: 20px; font-weight: 500; }
-  .badge-price { background: #e8f5e9; color: #2e7d32; }
-  .badge-rating { background: #fff8e1; color: #f57c00; }
-  .badge-reviews { background: #e3f2fd; color: #1565c0; }
-  .badge-pinterest { background: #fce4ec; color: #c62828; }
-  .card-date { font-size: 11px; color: #bbb; margin-bottom: 10px; }
-  .card-link { display: block; text-align: center; padding: 8px; background: #1a1a2e; color: white; border-radius: 8px; text-decoration: none; font-size: 13px; transition: background 0.2s; }
-  .card-link:hover { background: #e94560; }
-  .loading { text-align: center; padding: 60px; color: #888; font-size: 16px; }
-  .error { text-align: center; padding: 40px; color: #e94560; }
-  @media (max-width: 600px) { .stats { grid-template-columns: 1fr 1fr; } }
+  body{font-family:'Inter',sans-serif;background:#f8f9fa}
+  .card-top{height:110px;display:flex;align-items:center;justify-content:center}
+  .skeleton{background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);background-size:200% 100%;animation:shimmer 1.5s infinite}
+  @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 </style>
 </head>
-<body>
+<body class="text-gray-800">
 
-<header>
-  <h1>🏆 UAE Finder V3</h1>
-  <p>Produits winners Amazon UAE — mis à jour chaque matin à 6h</p>
-</header>
-
-<div class="container">
-  <div class="stats">
-    <div class="stat">
-      <div class="stat-num" id="total-count">—</div>
-      <div class="stat-label">Winners total</div>
+<!-- HEADER -->
+<div class="bg-white border-b">
+  <div class="max-w-[1400px] mx-auto px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <span class="text-2xl">🏆</span>
+      <div>
+        <h1 class="font-bold text-lg">UAE Finder V3</h1>
+        <p class="text-xs text-gray-400">Mis à jour chaque matin à 6h</p>
+      </div>
     </div>
-    <div class="stat">
-      <div class="stat-num" id="today-count">—</div>
-      <div class="stat-label">Ajoutés aujourd'hui</div>
-    </div>
-    <div class="stat">
-      <div class="stat-num" id="pinterest-count">—</div>
-      <div class="stat-label">Tendances Pinterest</div>
+    <div class="flex gap-3">
+      <div class="text-center">
+        <div id="stat-total" class="font-bold text-xl text-red-600">—</div>
+        <div class="text-xs text-gray-400">Winners</div>
+      </div>
+      <div class="text-center">
+        <div id="stat-today" class="font-bold text-xl text-green-600">—</div>
+        <div class="text-xs text-gray-400">Aujourd'hui</div>
+      </div>
+      <div class="text-center">
+        <div id="stat-pinterest" class="font-bold text-xl text-pink-600">—</div>
+        <div class="text-xs text-gray-400">Pinterest</div>
+      </div>
     </div>
   </div>
+</div>
 
-  <div class="filters">
-    <button class="filter-btn active" onclick="filterCards('all', this)">Tous</button>
-    <button class="filter-btn" onclick="filterCards('pinterest', this)">🔥 Pinterest</button>
-    <button class="filter-btn" onclick="filterCards('high-price', this)">💰 +150 AED</button>
-    <button class="filter-btn" onclick="filterCards('top-rated', this)">⭐ +4.5</button>
+<!-- FILTERS BAR -->
+<div class="bg-white border-b sticky top-0 z-20">
+  <div class="max-w-[1400px] mx-auto px-6 py-4 flex flex-wrap items-end gap-3">
+    <div class="flex flex-col gap-1">
+      <label class="text-xs text-gray-500">Pinterest</label>
+      <select id="filter-pinterest" class="border rounded-lg px-3 py-2 text-sm bg-white min-w-[110px]">
+        <option value="all">Tous</option>
+        <option value="yes">🔥 Trending</option>
+        <option value="no">Normal</option>
+      </select>
+    </div>
+    <div class="flex flex-col gap-1">
+      <label class="text-xs text-gray-500">Prix AED</label>
+      <div class="flex gap-2">
+        <input id="filter-min" placeholder="Min" class="border rounded-lg px-3 py-2 text-sm w-20">
+        <input id="filter-max" placeholder="Max" class="border rounded-lg px-3 py-2 text-sm w-20">
+      </div>
+    </div>
+    <div class="flex flex-col gap-1">
+      <label class="text-xs text-gray-500">Rating min</label>
+      <select id="filter-rating" class="border rounded-lg px-3 py-2 text-sm bg-white min-w-[110px]">
+        <option value="0">Tous</option>
+        <option value="4">4+</option>
+        <option value="4.5">4.5+</option>
+      </select>
+    </div>
+    <div class="flex flex-col gap-1">
+      <label class="text-xs text-gray-500">Avis min</label>
+      <select id="filter-reviews" class="border rounded-lg px-3 py-2 text-sm bg-white min-w-[110px]">
+        <option value="0">Tous</option>
+        <option value="50">50+</option>
+        <option value="100">100+</option>
+        <option value="300">300+</option>
+      </select>
+    </div>
+    <div class="flex flex-col gap-1">
+      <label class="text-xs text-gray-500">Date</label>
+      <select id="filter-date" class="border rounded-lg px-3 py-2 text-sm bg-white min-w-[110px]">
+        <option value="all">Toutes</option>
+        <option value="today">Aujourd'hui</option>
+        <option value="week">Cette semaine</option>
+      </select>
+    </div>
+    <div class="flex gap-2 ml-auto">
+      <button onclick="applyFilters()" class="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-lg text-sm font-medium">✓ Appliquer</button>
+      <button onclick="resetFilters()" class="border px-4 py-2 rounded-lg text-sm bg-white hover:bg-gray-50">↺ Réinitialiser</button>
+    </div>
   </div>
+</div>
 
-  <div class="grid" id="cards-grid">
-    <div class="loading">⏳ Chargement des winners...</div>
+<!-- TOOLBAR -->
+<div class="max-w-[1400px] mx-auto px-6 py-5 flex justify-between items-center">
+  <h2 class="font-bold text-sm" id="result-count">Chargement...</h2>
+  <div class="flex bg-white border rounded-lg p-1">
+    <button id="btn-cartes" onclick="showView('cartes')" class="bg-red-600 text-white px-4 py-1.5 rounded-md text-xs font-medium">▦ Cartes</button>
+    <button id="btn-tableau" onclick="showView('tableau')" class="px-4 py-1.5 text-xs font-medium text-gray-500">≡ Tableau</button>
+  </div>
+</div>
+
+<!-- GRID CARTES -->
+<div id="view-cartes" class="max-w-[1400px] mx-auto px-6 pb-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+  <!-- Skeletons loading -->
+  <div class="bg-white rounded-2xl border overflow-hidden">
+    <div class="card-top skeleton"></div>
+    <div class="p-4 space-y-3">
+      <div class="h-3 skeleton rounded w-3/4"></div>
+      <div class="h-3 skeleton rounded w-1/2"></div>
+      <div class="h-8 skeleton rounded"></div>
+    </div>
+  </div>
+  <div class="bg-white rounded-2xl border overflow-hidden">
+    <div class="card-top skeleton"></div>
+    <div class="p-4 space-y-3">
+      <div class="h-3 skeleton rounded w-3/4"></div>
+      <div class="h-3 skeleton rounded w-1/2"></div>
+      <div class="h-8 skeleton rounded"></div>
+    </div>
+  </div>
+  <div class="bg-white rounded-2xl border overflow-hidden">
+    <div class="card-top skeleton"></div>
+    <div class="p-4 space-y-3">
+      <div class="h-3 skeleton rounded w-3/4"></div>
+      <div class="h-3 skeleton rounded w-1/2"></div>
+      <div class="h-8 skeleton rounded"></div>
+    </div>
+  </div>
+  <div class="bg-white rounded-2xl border overflow-hidden">
+    <div class="card-top skeleton"></div>
+    <div class="p-4 space-y-3">
+      <div class="h-3 skeleton rounded w-3/4"></div>
+      <div class="h-3 skeleton rounded w-1/2"></div>
+      <div class="h-8 skeleton rounded"></div>
+    </div>
+  </div>
+</div>
+
+<!-- VIEW TABLEAU -->
+<div id="view-tableau" class="max-w-[1400px] mx-auto px-6 pb-10 hidden">
+  <div class="bg-white rounded-2xl border overflow-hidden">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 text-xs text-gray-500">
+        <tr>
+          <th class="text-left p-3">Produit</th>
+          <th class="text-center p-3">Prix AED</th>
+          <th class="text-center p-3">Rating</th>
+          <th class="text-center p-3">Avis</th>
+          <th class="text-center p-3">Pinterest</th>
+          <th class="text-center p-3">Date</th>
+          <th class="text-center p-3">Action</th>
+        </tr>
+      </thead>
+      <tbody id="tableau-body" class="text-xs divide-y">
+      </tbody>
+    </table>
   </div>
 </div>
 
@@ -76,65 +164,178 @@ const AIRTABLE_KEY = "pat5GxWq9SKLM3Cvi.e7f3088f2f7b3210062af7d003124a7f00d99a62
 const BASE_ID = "appPgydDrw2v1Bg6F";
 const TABLE = "Winners";
 
+const BG_COLORS = ["#EDE9FE","#FFF1CC","#E0FFF4","#FFE4E4","#E4F0FF","#FFF0E4"];
+const ICONS = ["✦","♡","✓","👜","★","◉"];
+const ICON_COLORS = ["text-purple-500","text-pink-500","text-red-500","text-yellow-500","text-blue-500","text-teal-500"];
+const BORDER_COLORS = ["border-purple-400","border-pink-400","border-red-400","border-yellow-400","border-blue-400","border-teal-400"];
+
 let allRecords = [];
+let filtered = [];
 
 async function loadWinners() {
   try {
-    const url = "https://api.airtable.com/v0/" + BASE_ID + "/" + TABLE + "?sort[0][field]=Date&sort[0][direction]=desc&maxRecords=100";
+    let url = "https://api.airtable.com/v0/" + BASE_ID + "/" + TABLE;
+    url += "?sort[0][field]=Date&sort[0][direction]=desc&maxRecords=200";
     const r = await fetch(url, {
       headers: { "Authorization": "Bearer " + AIRTABLE_KEY }
     });
     const data = await r.json();
     allRecords = data.records || [];
-    renderCards(allRecords);
+    filtered = allRecords;
     updateStats(allRecords);
+    renderCards(filtered);
+    renderTableau(filtered);
   } catch(e) {
-    document.getElementById('cards-grid').innerHTML = '<div class="error">❌ Erreur de chargement. Vérifiez la clé Airtable.</div>';
+    document.getElementById('view-cartes').innerHTML = '<div class="col-span-4 text-center py-20 text-red-500">❌ Erreur de chargement.</div>';
   }
 }
 
 function updateStats(records) {
-  document.getElementById('total-count').textContent = records.length;
+  document.getElementById('stat-total').textContent = records.length;
   const today = new Date().toISOString().split('T')[0];
-  const todayCount = records.filter(r => r.fields.Date === today).length;
-  document.getElementById('today-count').textContent = todayCount;
-  const pinterestCount = records.filter(r => r.fields.Pinterest === true).length;
-  document.getElementById('pinterest-count').textContent = pinterestCount;
+  document.getElementById('stat-today').textContent = records.filter(r => r.fields.Date === today).length;
+  document.getElementById('stat-pinterest').textContent = records.filter(r => r.fields.Pinterest === true).length;
+}
+
+function getRatingScore(rating) {
+  const r = parseFloat(rating) || 0;
+  if (r >= 4.5) return { label: "Top", color: "bg-green-50 text-green-600" };
+  if (r >= 4.0) return { label: "Bon", color: "bg-blue-50 text-blue-600" };
+  return { label: "Moyen", color: "bg-gray-100 text-gray-600" };
 }
 
 function renderCards(records) {
-  const grid = document.getElementById('cards-grid');
+  const grid = document.getElementById('view-cartes');
+  document.getElementById('result-count').textContent = records.length + " opportunités détectées";
+
   if (records.length === 0) {
-    grid.innerHTML = '<div class="loading">Aucun winner trouvé.</div>';
+    grid.innerHTML = '<div class="col-span-4 text-center py-20 text-gray-400">Aucun résultat pour ces filtres.</div>';
     return;
   }
-  grid.innerHTML = records.map(r => {
+
+  grid.innerHTML = records.map((r, i) => {
     const f = r.fields;
-    const pinterest = f.Pinterest ? '<span class="badge badge-pinterest">🔥 Pinterest</span>' : '';
+    const idx = i % 6;
+    const bg = BG_COLORS[idx];
+    const icon = ICONS[idx];
+    const iconColor = ICON_COLORS[idx];
+    const borderColor = BORDER_COLORS[idx];
+    const score = getRatingScore(f.Rating);
+    const pinterest = f.Pinterest ? '<span class="bg-pink-100 text-pink-600 px-1.5 py-0.5 rounded text-[10px] ml-1">🔥 Pinterest</span>' : '<span class="bg-green-100 text-green-600 px-1.5 py-0.5 rounded text-[10px] ml-1">Amazon</span>';
+    const title = (f.Titre || 'Produit inconnu').substring(0, 60);
+    const price = f['Prix AED'] || 0;
+    const rating = f.Rating || 0;
+    const reviews = f.Avis || 0;
+    const date = f.Date || '';
+    const url = f.URL || '#';
+
     return `
-      <div class="card" data-pinterest="${f.Pinterest || false}" data-price="${f['Prix AED'] || 0}" data-rating="${f.Rating || 0}">
-        <div class="card-date">📅 ${f.Date || 'N/A'}</div>
-        <div class="card-title">${f.Titre || 'Titre inconnu'}</div>
-        <div class="card-stats">
-          <span class="badge badge-price">💰 ${f['Prix AED'] || 0} AED</span>
-          <span class="badge badge-rating">⭐ ${f.Rating || 0}</span>
-          <span class="badge badge-reviews">💬 ${f.Avis || 0} avis</span>
-          ${pinterest}
-        </div>
-        <a href="${f.URL || '#'}" target="_blank" class="card-link">Voir sur Amazon →</a>
+    <div class="bg-white rounded-2xl border overflow-hidden hover:shadow-lg transition">
+      <div class="card-top" style="background:${bg}">
+        <div class="w-10 h-10 rounded-lg border-2 ${borderColor} bg-white flex items-center justify-center ${iconColor} text-lg">${icon}</div>
       </div>
-    `;
+      <div class="p-4">
+        <p class="text-[10px] text-gray-400 text-center">${date}</p>
+        <h3 class="font-semibold text-sm leading-tight mt-2 line-clamp-2">${title}</h3>
+        <p class="text-xs text-gray-500 mt-1">Amazon UAE ${pinterest}</p>
+        <div class="grid grid-cols-3 gap-2 mt-3 text-xs">
+          <div>
+            <p class="${score.color} font-bold inline px-1 rounded">${score.label}</p>
+            <p class="text-green-600 font-semibold mt-1">⭐ ${rating}/5</p>
+            <p class="text-gray-500">${reviews} avis</p>
+          </div>
+          <div>
+            <p class="text-gray-400">Prix</p>
+            <p class="font-semibold text-red-600">${price} AED</p>
+          </div>
+          <div class="text-right">
+            <p class="${score.color} px-2 py-0.5 rounded-full text-[10px] inline-block">${score.label}</p>
+          </div>
+        </div>
+        <div class="flex gap-2 mt-4">
+          <a href="${url}" target="_blank" class="flex-1 border rounded-full py-1.5 text-xs font-medium text-center hover:bg-gray-50">◎ Voir Amazon</a>
+          <button class="bg-red-600 text-white px-4 rounded-full text-xs font-medium">Fiche</button>
+        </div>
+      </div>
+    </div>`;
   }).join('');
 }
 
-function filterCards(type, btn) {
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  let filtered = allRecords;
-  if (type === 'pinterest') filtered = allRecords.filter(r => r.fields.Pinterest === true);
-  if (type === 'high-price') filtered = allRecords.filter(r => (r.fields['Prix AED'] || 0) >= 150);
-  if (type === 'top-rated') filtered = allRecords.filter(r => (r.fields.Rating || 0) >= 4.5);
+function renderTableau(records) {
+  const tbody = document.getElementById('tableau-body');
+  if (records.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" class="text-center py-10 text-gray-400">Aucun résultat.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = records.map(r => {
+    const f = r.fields;
+    const pinterest = f.Pinterest ? '🔥' : '—';
+    const url = f.URL || '#';
+    return `
+    <tr class="hover:bg-gray-50">
+      <td class="p-3 max-w-[300px]">
+        <p class="font-medium truncate">${(f.Titre || '').substring(0, 60)}</p>
+      </td>
+      <td class="p-3 text-center font-semibold text-red-600">${f['Prix AED'] || 0} AED</td>
+      <td class="p-3 text-center">⭐ ${f.Rating || 0}</td>
+      <td class="p-3 text-center">${f.Avis || 0}</td>
+      <td class="p-3 text-center">${pinterest}</td>
+      <td class="p-3 text-center text-gray-400">${f.Date || ''}</td>
+      <td class="p-3 text-center">
+        <a href="${url}" target="_blank" class="bg-red-600 text-white px-3 py-1 rounded-full hover:bg-red-700">Voir →</a>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function applyFilters() {
+  const pinterest = document.getElementById('filter-pinterest').value;
+  const min = parseFloat(document.getElementById('filter-min').value) || 0;
+  const max = parseFloat(document.getElementById('filter-max').value) || 99999;
+  const rating = parseFloat(document.getElementById('filter-rating').value) || 0;
+  const reviews = parseInt(document.getElementById('filter-reviews').value) || 0;
+  const date = document.getElementById('filter-date').value;
+  const today = new Date().toISOString().split('T')[0];
+  const weekAgo = new Date(Date.now() - 7*24*60*60*1000).toISOString().split('T')[0];
+
+  filtered = allRecords.filter(r => {
+    const f = r.fields;
+    if (pinterest === 'yes' && !f.Pinterest) return false;
+    if (pinterest === 'no' && f.Pinterest) return false;
+    if ((f['Prix AED'] || 0) < min) return false;
+    if ((f['Prix AED'] || 0) > max) return false;
+    if ((f.Rating || 0) < rating) return false;
+    if ((f.Avis || 0) < reviews) return false;
+    if (date === 'today' && f.Date !== today) return false;
+    if (date === 'week' && f.Date < weekAgo) return false;
+    return true;
+  });
+
   renderCards(filtered);
+  renderTableau(filtered);
+}
+
+function resetFilters() {
+  document.getElementById('filter-pinterest').value = 'all';
+  document.getElementById('filter-min').value = '';
+  document.getElementById('filter-max').value = '';
+  document.getElementById('filter-rating').value = '0';
+  document.getElementById('filter-reviews').value = '0';
+  document.getElementById('filter-date').value = 'all';
+  filtered = allRecords;
+  renderCards(filtered);
+  renderTableau(filtered);
+}
+
+function showView(view) {
+  document.getElementById('view-cartes').classList.toggle('hidden', view !== 'cartes');
+  document.getElementById('view-tableau').classList.toggle('hidden', view !== 'tableau');
+  document.getElementById('btn-cartes').className = view === 'cartes'
+    ? 'bg-red-600 text-white px-4 py-1.5 rounded-md text-xs font-medium'
+    : 'px-4 py-1.5 text-xs font-medium text-gray-500';
+  document.getElementById('btn-tableau').className = view === 'tableau'
+    ? 'bg-red-600 text-white px-4 py-1.5 rounded-md text-xs font-medium'
+    : 'px-4 py-1.5 text-xs font-medium text-gray-500';
 }
 
 loadWinners();
